@@ -1,34 +1,22 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 
-// توکن ربات
 const token = '7979366534:AAG03Xqh7VABYt-s0cAUeuscXGnmVbFtLmc';
 const bot = new TelegramBot(token, { polling: true });
 
-// هندل پیام‌ها
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const userMessage = msg.text;
 
-  // ارسال درخواست به GPT
+  // ارسال پیام کاربر به GPT سرور ما و دریافت پاسخ
   try {
-    const gptResponse = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: userMessage }],
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_OPENAI_API_KEY'
-        }
-      }
-    );
+    const response = await axios.post('https://khodabot-server.onrender.com/api/chat', {
+      message: userMessage
+    });
 
-    const responseText = gptResponse.data.choices[0].message.content;
-    bot.sendMessage(chatId, responseText);
-  } catch (err) {
-    bot.sendMessage(chatId, 'خطا در ارتباط با مغز مرکزی. لطفاً دوباره امتحان کن.');
+    const reply = response.data.reply || "متوجه نشدم، دوباره بپرس.";
+    bot.sendMessage(chatId, reply);
+  } catch (error) {
+    bot.sendMessage(chatId, "خطا در ارتباط با هوش مصنوعی. لطفا بعدا امتحان کن.");
   }
 });
